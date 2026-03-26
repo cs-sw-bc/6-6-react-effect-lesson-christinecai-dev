@@ -70,6 +70,8 @@ export default function MealFetchOnChange() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  
+  const API_URL = 'https://www.themealdb.com/api/json/v1/1/search.php?s='
   // 2. Write a useEffect that re-runs whenever searchTerm changes
   //    - Build the URL using the searchTerm value
   //    - Define an async function inside the effect
@@ -78,9 +80,23 @@ export default function MealFetchOnChange() {
   //    - On success: call setMeals with the meals array from the response
   useEffect(() => {
     // TODO: write your async fetch function here
+    async function fetchMeal(){
+        try {
+        const response = await fetch(`${API_URL}${searchTerm}`)
+        if (!response.ok) {
+          throw new Error("Some problem with API. Try again later");
+        }
+        const data = await response.json();
+        setMeals(data.meals);
+      } catch (err) {
+        setError(err.message)
+      } finally {//runs both on success and failure
+        setLoading(false)
+      }
+    }
 
-    // TODO: call it
-  }, []); // TODO: what belongs in this dependency array?
+    fetchMeal()
+  }, [searchTerm]); // it loads it for the first time and also whenever searchTerm changes
 
   if (loading) return <p>Loading meals...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -106,17 +122,25 @@ export default function MealFetchOnChange() {
       />
 
       {/* TODO in class: replace the two hardcoded MealCards below with a .map() over meals */}
+      
       <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
-        <MealCard
-          name={meals[0].strMeal}
-          image={meals[0].strMealThumb}
-          instructions={meals[0].strInstructions}
+
+        {/*Ternary condition ? do first: do second*/}
+
+        {
+          (!meals || meals.length ==0) ? (<p>No meal found</p>) :
+          meals.map((meal)=>{
+          return(
+          <MealCard
+          name={meal.strMeal}
+          image={meal.strMealThumb}
+          instructions={meal.strInstructions}
         />
-        <MealCard
-          name={meals[1].strMeal}
-          image={meals[1].strMealThumb}
-          instructions={meals[1].strInstructions}
-        />
+          );
+        })
+      }
+        {/*Can use () instead of {return()} */}
+    
       </div>
 
     </div>
